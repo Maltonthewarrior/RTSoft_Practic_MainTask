@@ -14,6 +14,7 @@ public:
 	void stop_svr();
 	int gets(char *buf, int size);
 	void puts(const char *buf, int size, int port, const char *ip);
+	//void puts(const char *buf, int size, int port, string *ip);
 private:
 	int sock_svr;
 	int sock_clt;
@@ -54,6 +55,7 @@ int udp_socket::gets(char *buf, int size)
 }
 
 void udp_socket::puts(const char *buf, int size, int port, const char *ip)
+//void udp_socket::puts(const char *buf, int size, int port, string *ip)
 {
 	sock_clt = socket(AF_INET, SOCK_DGRAM, 0);
 	if(sock_clt < 0) {
@@ -68,7 +70,7 @@ void udp_socket::puts(const char *buf, int size, int port, const char *ip)
 	//printf("put!\n");
 }
 
-int main()
+/*int main()
 {
 	udp_socket my_sock;
 	char msg[]="hello";
@@ -79,4 +81,4 @@ int main()
 	printf("%s\n", buf);
 	my_sock.stop_svr();
 	return 0;
-}
+}*/
