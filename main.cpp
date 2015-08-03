@@ -1,6 +1,5 @@
 #include <pthread.h>
 #include <time.h>
-#include <functional>
 #include <algorithm>
 #include "reader.h"
 #include "socket.h"
@@ -11,7 +10,7 @@ udp_socket my_sock;
 
 using namespace std;
 
-class func
+/*class func
 {
 	public:
 		char ip[16];
@@ -25,7 +24,27 @@ class func
 		{
 			return !strcmp(a.ip, ip) && a.port==port?true:false;
 		}
-};
+};*/
+
+void set_active()
+{
+	vector<host>::iterator it = max_element(list.begin(), list.end(), 
+	[](const host& a, const host& b)->bool
+	{
+		if(a.hp<0)
+			return true;
+		if(b.hp<0)
+			return false;
+		if(a.port<b.port)
+			return true;
+		if(a.port>b.port)
+			return false;
+		if(a.port == b.port)
+			return strcmp(a.ip, b.ip)<0?true:false;
+	});
+	it->is_active = true;
+	printf("%s:%d - active\n", it->ip, it->port);
+}
 
 void msg_handler(const char * msg_in)
 {
@@ -50,13 +69,13 @@ void msg_handler(const char * msg_in)
 		}
 		if(!strcmp(cmd, "echo_answer"))
 		{
-			func my_func(ip, port);
-			vector<host>::iterator it = find_if(list.begin(), list.end(), my_func);
-			//vector<host>::iterator it = find_if(list.begin(), list.end(), 
-			//[ip, port](const host& a)->bool
-			//{
-			//	return !strcmp(a.ip, ip) && a.port==port?true:false;
-			//});
+			//func my_func(ip, port);
+			//vector<host>::iterator it = find_if(list.begin(), list.end(), my_func);
+			vector<host>::iterator it = find_if(list.begin(), list.end(), 
+			[ip, port](const host& a)->bool
+			{
+				return !strcmp(a.ip, ip) && a.port==port?true:false;
+			});
 			if(it == list.end())
 			{
 				printf("error - unknown ip and port %s:%d\n", ip, port);
@@ -82,6 +101,7 @@ void * f_thrd_ping(void * t)
 	rd.read_ip(list);
 	char msg[1024];
 	sprintf(msg, "%d\necho_request", g_port);
+	set_active();
 	while(true)
 	{
 		for(int i=0; i < list.size(); ++i)
@@ -93,6 +113,11 @@ void * f_thrd_ping(void * t)
 			if(list[i].hp<0)
 			{
 				printf("%s:%d unreacheble\n",  list[i].ip,  list[i].port);
+				if(list[i].is_active)
+				{
+					list[i].is_active = 0;
+					set_active();
+				}
 			}
 			sleep(5);
 		}

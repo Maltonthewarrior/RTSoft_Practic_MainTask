@@ -9,7 +9,7 @@ reader.o: reader.cpp reader.h
 socket.o: socket.cpp socket.h
 	g++ -c socket.cpp
 main.o: main.cpp
-	g++ -c main.cpp -lpthread
+	g++-4.8 -c main.cpp -lpthread -std=c++11
 clean:
 	rm -rf *.o
 install: 
